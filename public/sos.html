@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOS Oyunu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    .container {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .player-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .player-info input {
+      font-size: 16px;
+      text-align: center;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+    }
+    .player-info button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .player-info.active button {
+      background-color: green;
+      color: white;
+    }
+    .player-info.inactive button {
+      background-color: red;
+      color: white;
+    }
+    .board {
+      display: grid;
+      gap: 5px;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .board button {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      background-color: #e0e0e0;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      position: relative;
+    }
+    .board button:hover {
+      background-color: #d0d0d0;
+    }
+    .board button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .line {
+      position: absolute;
+      background-color: red;
+      z-index: 1;
+    }
+    .horizontal-line {
+      height: 2px;
+      width: 150%;
+      top: 50%;
+      left: -25%;
+      transform: translateY(-50%);
+    }
+    .vertical-line {
+      width: 2px;
+      height: 150%;
+      top: -25%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .diagonal-right-line {
+      width: 2px;
+      height: 212%;
+      top: -56%;
+      left: -56%;
+      transform: rotate(45deg);
+    }
+    .diagonal-left-line {
+      width: 2px;
+      height: 212%;
+      top: -56%;
+      right: -56%;
+      transform: rotate(-45deg);
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    .controls input {
+      padding: 5px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .winner-message {
+      font-size: 24px;
+      color: #28a745;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>SOS Oyunu</h1>
+  <div class="container">
+    <div class="player-info player1 active" id="player1Info">
+      <input type="text" id="player1Name" value="Oyuncu 1" style="font-size: 18px; text-align: center;">
+      <button id="player1Letter">S</button>
+      <div>Skor: <span id="player1Score">0</span></div>
+    </div>
+    <div>
+      <div class="controls">
+        <label for="boardSize">Tahta Boyutu:</label>
+        <input type="number" id="boardSize" min="3" max="10" value="5">
+        <button id="resetButton">Oyunu Başlat / Yeniden Başlat</button>
+      </div>
+      <div class="board" id="gameBoard"></div>
+      <div class="winner-message" id="winnerMessage"></div>
+    </div>
+    <div class="player-info player2 inactive" id="player2Info">
+      <input type="text" id="player2Name" value="Oyuncu 2" style="font-size: 18px; text-align: center;">
+      <button id="player2Letter">O</button>
+      <div>Skor: <span id="player2Score">0</span></div>
+    </div>
+  </div>
+
+  <script>
+    let boardSize = 5;
+    let currentPlayer = 1; // 1: Oyuncu 1, 2: Oyuncu 2
+    let gameBoard = [];
+    let player1Score = 0;
+    let player2Score = 0;
+
+    const boardElement = document.getElementById('gameBoard');
+    const player1ScoreElement = document.getElementById('player1Score');
+    const player2ScoreElement = document.getElementById('player2Score');
+    const player1Info = document.getElementById('player1Info');
+    const player2Info = document.getElementById('player2Info');
+    const player1LetterButton = document.getElementById('player1Letter');
+    const player2LetterButton = document.getElementById('player2Letter');
+    const resetButton = document.getElementById('resetButton');
+    const boardSizeInput = document.getElementById('boardSize');
+    const winnerMessageElement = document.getElementById('winnerMessage');
+
+    const player1NameInput = document.getElementById('player1Name');
+    const player2NameInput = document.getElementById('player2Name');
+
+    let player1Name = "Oyuncu 1";
+    let player2Name = "Oyuncu 2";
+
+    function initializeGame() {
+      player1Name = player1NameInput.value || "Oyuncu 1";
+      player2Name = player2NameInput.value || "Oyuncu 2";
+
+      boardSize = parseInt(boardSizeInput.value);
+      if (boardSize < 3 || boardSize > 10) {
+        alert('Tahta boyutu 3 ile 10 arasında olmalıdır.');
+        return;
+      }
+
+      gameBoard = Array.from({ length: boardSize }, () => Array(boardSize).fill(''));
+      currentPlayer = 1;
+      player1Score = 0;
+      player2Score = 0;
+
+      updateScores();
+      renderBoard();
+      updatePlayerTurn();
+      winnerMessageElement.textContent = '';
+    }
+
+    function renderBoard() {
+      boardElement.innerHTML = ''; // Tahtayı temizle
+      boardElement.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+      boardElement.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
+
+      for (let row = 0; row < boardSize; row++) {
+        for (let col = 0; col < boardSize; col++) {
+          const cell = document.createElement('button');
+          cell.textContent = gameBoard[row][col];
+          cell.disabled = gameBoard[row][col] !== ''; // Dolu hücreleri devre dışı bırak
+          cell.addEventListener('click', () => handleCellClick(row, col));
+          boardElement.appendChild(cell);
+        }
+      }
+    }
+
+    function handleCellClick(row, col) {
+      if (gameBoard[row][col] !== '') {
+        alert('Bu kare dolu!');
+        return;
+      }
+
+      const selectedLetter = currentPlayer === 1 ? player1LetterButton.textContent : player2LetterButton.textContent;
+      gameBoard[row][col] = selectedLetter;
+
+      const sosFound = checkForSOS(row, col);
+
+      // Eğer SOS bulunmadıysa sırayı değiştir
+      if (!sosFound) {
+        currentPlayer = currentPlayer === 1 ? 2 : 1;
+      }
+
+      // Tahtayı yeniden çiz ve sırayı güncelle
+      renderBoard();
+      updatePlayerTurn();
+
+      // Eğer tahta doluysa oyunu bitir
+      if (isBoardFull()) {
+        declareWinner();
+      }
+    }
+
+    function checkForSOS(row, col) {
+      const directions_S = [
+        { dr: -1, dc: -1, lineClass: 'diagonal-left-line' }, // sol-yukarı-çapraz
+        { dr: -1, dc: 0, lineClass: 'vertical-line' },       // yukarı-dikey
+        { dr: -1, dc: 1, lineClass: 'diagonal-right-line' }, // sağ-yukarı-çapraz
+        { dr: 0, dc: 1, lineClass: 'horizontal-line' },      // sağ-yatay
+        { dr: 1, dc: 1, lineClass: 'diagonal-right-line' },  // sağ-aşağı-çapraz
+        { dr: 1, dc: 0, lineClass: 'vertical-line' },        // aşağı-dikey
+        { dr: 1, dc: -1, lineClass: 'diagonal-left-line' },  // sol-aşağı-çapraz
+        { dr: 0, dc: -1, lineClass: 'horizontal-line' }      // sol-yatay
+      ];
+      const directions_O = [
+        { dr: -1, dc: -1, lineClass: 'diagonal-left-line' }, // sol-yukarı-çapraz
+        { dr: -1, dc: 0, lineClass: 'vertical-line' },       // yukarı-dikey
+        { dr: -1, dc: 1, lineClass: 'diagonal-right-line' }, // sağ-yukarı-çapraz
+        { dr: 0, dc: 1, lineClass: 'horizontal-line' },      // sağ-yatay
+      ];
+
+      let sosFound = false;
+      const letter = gameBoard[row][col];
+      let directions;
+      if (letter === 'S') {
+        console.log('letter:S');
+        directions = directions_S;
+      } else {
+        console.log('letter:O');
+        directions = directions_O;
+      }
+
+      for (const { dr, dc, lineClass } of directions) {
+        const sos = checkDirection(row, col, dr, dc);
+        if (sos) {
+          drawLine(sos.startRow, sos.startCol, lineClass);
+          currentPlayer === 1 ? player1Score++ : player2Score++;
+          updateScores();
+          sosFound = true;
+        }
+      }
+
+      return sosFound;
+    }
+
+    function checkDirection(row, col, dr, dc) {
+      const letter = gameBoard[row][col];
+
+      if (letter === 'S') {
+        const endRow = row + 2 * dr;
+        const endCol = col + 2 * dc;
+
+        if (
+          endRow >= 0 && endCol >= 0 && endRow < boardSize && endCol < boardSize &&
+          gameBoard[endRow][endCol] === 'S' &&
+          gameBoard[row + dr][col + dc] === 'O'
+        ) {
+          return { startRow: row, startCol: col };
+        }
+      } else if (letter === 'O') {
+        const startRow = row - dr;
+        const startCol = col - dc;
+        const endRow = row + dr;
+        const endCol = col + dc;
+
+        if (
+          startRow >= 0 && startCol >= 0 && endRow < boardSize && endCol < boardSize &&
+          gameBoard[startRow][startCol] === 'S' &&
+          gameBoard[endRow][endCol] === 'S'
+        ) {
+          return { startRow, startCol };
+        }
+      }
+
+      return null;
+    }
+
+    function drawLine(startRow, startCol, lineClass) {
+      const startCell = document.querySelector(`#gameBoard button:nth-child(${startRow * boardSize + startCol + 1})`);
+      const line = document.createElement('div');
+      line.classList.add('line', lineClass);
+      startCell.appendChild(line);
+    }
+
+    function isBoardFull() {
+      return gameBoard.every(row => row.every(cell => cell !== ''));
+    }
+
+   function declareWinner() {
+      if (player1Score > player2Score) {
+        winnerMessageElement.textContent = 'Oyuncu 1 Kazandı!';
+      } else if (player2Score > player1Score) {
+        winnerMessageElement.textContent = 'Oyuncu 2 Kazandı!';
+      } else {
+        winnerMessageElement.textContent = 'Berabere!';
+      }
+    }
+
+    function updateScores() {
+      player1ScoreElement.textContent = player1Score;
+      player2ScoreElement.textContent = player2Score;
+    }
+
+    function updatePlayerTurn() {
+      player1Info.classList.toggle('active', currentPlayer === 1);
+      player1Info.classList.toggle('inactive', currentPlayer !== 1);
+      player2Info.classList.toggle('active', currentPlayer === 2);
+      player2Info.classList.toggle('inactive', currentPlayer !== 2);
+    }
+
+    player1LetterButton.addEventListener('click', () => {
+      player1LetterButton.textContent = player1LetterButton.textContent === 'S' ? 'O' : 'S';
+    });
+
+    player2LetterButton.addEventListener('click', () => {
+      player2LetterButton.textContent = player2LetterButton.textContent === 'S' ? 'O' : 'S';
+    });
+
+    resetButton.addEventListener('click', initializeGame);
+
+    // İlk oyun başlatma
+    initializeGame();
+  </script>
+</body>
+</html>

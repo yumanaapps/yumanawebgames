@@ -31,13 +31,9 @@
       align-items: center;
       gap: 10px;
     }
-    .player-info input {
-      font-size: 16px;
-      text-align: center;
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      width: 100%;
+    .player-info div {
+      font-size: 18px;
+      color: #333;
     }
     .player-info button {
       padding: 10px 20px;
@@ -135,7 +131,7 @@
   <h1>SOS Oyunu</h1>
   <div class="container">
     <div class="player-info player1 active" id="player1Info">
-      <input type="text" id="player1Name" value="Oyuncu 1" style="font-size: 18px; text-align: center;">
+      <div>Oyuncu 1</div>
       <button id="player1Letter">S</button>
       <div>Skor: <span id="player1Score">0</span></div>
     </div>
@@ -149,7 +145,7 @@
       <div class="winner-message" id="winnerMessage"></div>
     </div>
     <div class="player-info player2 inactive" id="player2Info">
-      <input type="text" id="player2Name" value="Oyuncu 2" style="font-size: 18px; text-align: center;">
+      <div>Oyuncu 2</div>
       <button id="player2Letter">O</button>
       <div>Skor: <span id="player2Score">0</span></div>
     </div>
@@ -173,16 +169,7 @@
     const boardSizeInput = document.getElementById('boardSize');
     const winnerMessageElement = document.getElementById('winnerMessage');
 
-    const player1NameInput = document.getElementById('player1Name');
-    const player2NameInput = document.getElementById('player2Name');
-
-    let player1Name = "Oyuncu 1";
-    let player2Name = "Oyuncu 2";
-
     function initializeGame() {
-      player1Name = player1NameInput.value || "Oyuncu 1";
-      player2Name = player2NameInput.value || "Oyuncu 2";
-
       boardSize = parseInt(boardSizeInput.value);
       if (boardSize < 3 || boardSize > 10) {
         alert('Tahta boyutu 3 ile 10 arasında olmalıdır.');
@@ -227,10 +214,14 @@
 
       const sosFound = checkForSOS(row, col);
 
+	  console.log(`sosFound ${sosFound} currentPlayer(before): ${currentPlayer}`);
+	  
       // Eğer SOS bulunmadıysa sırayı değiştir
       if (!sosFound) {
         currentPlayer = currentPlayer === 1 ? 2 : 1;
       }
+	  
+	  console.log(`currentPlayer(later): ${currentPlayer}`);
 
       // Tahtayı yeniden çiz ve sırayı güncelle
       renderBoard();
@@ -334,7 +325,7 @@
       return gameBoard.every(row => row.every(cell => cell !== ''));
     }
 
-   function declareWinner() {
+    function declareWinner() {
       if (player1Score > player2Score) {
         winnerMessageElement.textContent = 'Oyuncu 1 Kazandı!';
       } else if (player2Score > player1Score) {

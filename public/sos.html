@@ -253,7 +253,8 @@
         { dr: 1, dc: -1, lineClass: 'diagonal-left-line' },  // sol-aşağı-çapraz
         { dr: 0, dc: -1, lineClass: 'horizontal-line' }      // sol-yatay
       ];
-      const directions_O = [
+	  
+	  const directions_O = [
         { dr: -1, dc: -1, lineClass: 'diagonal-left-line' }, // sol-yukarı-çapraz
         { dr: -1, dc: 0, lineClass: 'vertical-line' },       // yukarı-dikey
         { dr: -1, dc: 1, lineClass: 'diagonal-right-line' }, // sağ-yukarı-çapraz
@@ -261,16 +262,17 @@
       ];
 
       let sosFound = false;
-      const letter = gameBoard[row][col];
-      let directions;
-      if (letter === 'S') {
-        console.log('letter:S');
-        directions = directions_S;
-      } else {
-        console.log('letter:O');
-        directions = directions_O;
-      }
 
+	  const letter = gameBoard[row][col];
+	  let directions;
+	  if(letter === 'S') {
+		console.log('letter:S');
+		directions = directions_S;
+	  } else {
+		console.log('letter:O');
+		directions = directions_O;
+	  }
+	  
       for (const { dr, dc, lineClass } of directions) {
         const sos = checkDirection(row, col, dr, dc);
         if (sos) {
@@ -291,11 +293,13 @@
         const endRow = row + 2 * dr;
         const endCol = col + 2 * dc;
 
+		console.log(`startRow: ${row}, startCol: ${col}, endRow: ${endRow}, endCol: ${endCol}`);
         if (
           endRow >= 0 && endCol >= 0 && endRow < boardSize && endCol < boardSize &&
           gameBoard[endRow][endCol] === 'S' &&
           gameBoard[row + dr][col + dc] === 'O'
         ) {
+		  console.log('SOS');
           return { startRow: row, startCol: col };
         }
       } else if (letter === 'O') {
@@ -304,11 +308,14 @@
         const endRow = row + dr;
         const endCol = col + dc;
 
+		console.log(`startRow: ${startRow}, startCol: ${startCol}, endRow: ${endRow}, endCol: ${endCol}`);
         if (
           startRow >= 0 && startCol >= 0 && endRow < boardSize && endCol < boardSize &&
+		  endRow >= 0 && endCol >= 0 && startRow < boardSize && startCol < boardSize &&
           gameBoard[startRow][startCol] === 'S' &&
           gameBoard[endRow][endCol] === 'S'
         ) {
+		  console.log('SOS');
           return { startRow, startCol };
         }
       }

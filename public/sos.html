@@ -51,26 +51,29 @@
       background-color: red;
       color: white;
     }
-    .board {
-      display: grid;
-      gap: 5px;
-      background-color: #fff;
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .board button {
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
-      font-weight: bold;
-      border: none;
-      border-radius: 5px;
-      background-color: #e0e0e0;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      position: relative;
-    }
+	.board {
+	  display: grid;
+	  gap: 5px; /* Hücreler arası boşluk */
+	  background-color: #fff;
+	  padding: 10px;
+	  border-radius: 10px;
+	  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	  width: fit-content; /* Tahtanın genişliği, içeriğe göre otomatik ayarlanır */
+	  aspect-ratio: 1 / 1; /* Tahtanın en-boy oranını 1:1 yapar (kare olmasını sağlar) */
+	}
+
+	.board button {
+	  width: 50px; /* Her hücrenin genişliği */
+	  height: 50px; /* Her hücrenin yüksekliği */
+	  font-size: 20px;
+	  font-weight: bold;
+	  border: none;
+	  border-radius: 5px;
+	  background-color: #e0e0e0;
+	  cursor: pointer;
+	  transition: background-color 0.3s ease;
+	  position: relative;
+	}
     .board button:hover {
       background-color: #d0d0d0;
     }
@@ -111,15 +114,43 @@
       right: -56%;
       transform: rotate(-45deg);
     }
-    .controls {
-      margin-top: 20px;
-    }
-    .controls input {
-      padding: 5px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
+	.controls {
+	  display: flex;
+	  flex-direction: column; /* Alt alta sıralama */
+	  align-items: center; /* İçerikleri ortala */
+	  gap: 10px; /* Elemanlar arasında boşluk */
+	  margin-top: 20px;
+	}
+
+	.controls input {
+	  padding: 8px;
+	  font-size: 16px;
+	  border: 1px solid #ccc;
+	  border-radius: 5px;
+	  width: 100px; /* Giriş alanını biraz daralt */
+	  text-align: center; /* Sayıyı ortala */
+	}
+
+	#resetButton {
+	  padding: 12px 24px; /* Buton boyutunu artır */
+	  font-size: 18px; /* Yazı boyutunu büyüt */
+	  font-weight: bold; /* Yazı kalın olsun */
+	  color: white; /* Yazı rengi beyaz */
+	  background-color: #007bff; /* Mavi arka plan */
+	  border: none; /* Kenarlık yok */
+	  border-radius: 25px; /* Yuvarlak köşeler */
+	  cursor: pointer; /* Fare imleci el işareti */
+	  transition: background-color 0.3s ease, transform 0.3s ease; /* Geçiş efekti */
+	}
+
+	#resetButton:hover {
+	  background-color: #0056b3; /* Hover durumunda daha koyu mavi */
+	  transform: scale(1.05); /* Butonu biraz büyüt */
+	}
+
+	#resetButton:active {
+	  transform: scale(0.95); /* Tıklandığında küçült */
+	}
     .winner-message {
       font-size: 24px;
       color: #28a745;
@@ -136,11 +167,13 @@
       <div>Skor: <span id="player1Score">0</span></div>
     </div>
     <div>
-      <div class="controls">
-        <label for="boardSize">Tahta Boyutu:</label>
-        <input type="number" id="boardSize" min="3" max="10" value="5">
-        <button id="resetButton">Oyunu Başlat / Yeniden Başlat</button>
-      </div>
+		<div class="controls">
+		  <div>
+			<label for="boardSize">Tahta Boyutu:</label>
+			<input type="number" id="boardSize" min="3" max="10" value="5">
+		  </div>
+		  <button id="resetButton">Tahtayı Sıfırla</button>
+		</div>
       <div class="board" id="gameBoard"></div>
       <div class="winner-message" id="winnerMessage"></div>
     </div>

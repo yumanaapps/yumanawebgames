@@ -151,11 +151,15 @@
 	#resetButton:active {
 	  transform: scale(0.95); /* Tıklandığında küçült */
 	}
-    .winner-message {
-      font-size: 24px;
-      color: #28a745;
-      margin-top: 10px;
-    }
+  .winner-message {
+  font-size: 24px;
+  color: #28a745;
+  margin-top: 10px;
+  height: 30px; /* Sabit bir yükseklik belirleyin */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
   </style>
 </head>
 <body>
@@ -222,6 +226,10 @@
       renderBoard();
       updatePlayerTurn();
       winnerMessageElement.textContent = '';
+
+      // Çizgileri temizle
+      const lines = document.querySelectorAll('.line');
+      lines.forEach(line => line.remove());
     }
 
     function renderBoard() {
@@ -251,14 +259,14 @@
 
       const sosFound = checkForSOS(row, col);
 
-	  console.log(`sosFound ${sosFound} currentPlayer(before): ${currentPlayer}`);
+	    console.log(`sosFound ${sosFound} currentPlayer(before): ${currentPlayer}`);
 	  
       // Eğer SOS bulunmadıysa sırayı değiştir
       if (!sosFound) {
         currentPlayer = currentPlayer === 1 ? 2 : 1;
       }
 	  
-	  console.log(`currentPlayer(later): ${currentPlayer}`);
+	    console.log(`currentPlayer(later): ${currentPlayer}`);
 
       // Tahtayı yeniden çiz ve sırayı güncelle
       renderBoard();
@@ -272,39 +280,32 @@
 
     function checkForSOS(row, col) {
       const directions_S = [
-        { dr: -1, dc: -1, lineClass: 'diagonal-left-line' }, // sol-yukarı-çapraz
-        { dr: -1, dc: 0, lineClass: 'vertical-line' },       // yukarı-dikey
-        { dr: -1, dc: 1, lineClass: 'diagonal-right-line' }, // sağ-yukarı-çapraz
-        { dr: 0, dc: 1, lineClass: 'horizontal-line' },      // sağ-yatay
-        { dr: 1, dc: 1, lineClass: 'diagonal-right-line' },  // sağ-aşağı-çapraz
-        { dr: 1, dc: 0, lineClass: 'vertical-line' },        // aşağı-dikey
-        { dr: 1, dc: -1, lineClass: 'diagonal-left-line' },  // sol-aşağı-çapraz
-        { dr: 0, dc: -1, lineClass: 'horizontal-line' }      // sol-yatay
+        { dr: -1, dc: -1 }, // sol-yukarı-çapraz
+        { dr: -1, dc: 0 },  // yukarı-dikey
+        { dr: -1, dc: 1 },  // sağ-yukarı-çapraz
+        { dr: 0, dc: 1 },   // sağ-yatay
+        { dr: 1, dc: 1 },   // sağ-aşağı-çapraz
+        { dr: 1, dc: 0 },   // aşağı-dikey
+        { dr: 1, dc: -1 },  // sol-aşağı-çapraz
+        { dr: 0, dc: -1 }   // sol-yatay
       ];
-	  
-	  const directions_O = [
-        { dr: -1, dc: -1, lineClass: 'diagonal-left-line' }, // sol-yukarı-çapraz
-        { dr: -1, dc: 0, lineClass: 'vertical-line' },       // yukarı-dikey
-        { dr: -1, dc: 1, lineClass: 'diagonal-right-line' }, // sağ-yukarı-çapraz
-        { dr: 0, dc: 1, lineClass: 'horizontal-line' },      // sağ-yatay
+
+      const directions_O = [
+        { dr: -1, dc: -1 }, // sol-yukarı-çapraz
+        { dr: -1, dc: 0 },  // yukarı-dikey
+        { dr: -1, dc: 1 },  // sağ-yukarı-çapraz
+        { dr: 0, dc: 1 }    // sağ-yatay
       ];
 
       let sosFound = false;
 
-	  const letter = gameBoard[row][col];
-	  let directions;
-	  if(letter === 'S') {
-		console.log('letter:S');
-		directions = directions_S;
-	  } else {
-		console.log('letter:O');
-		directions = directions_O;
-	  }
-	  
-      for (const { dr, dc, lineClass } of directions) {
+      const letter = gameBoard[row][col];
+      const directions = letter === 'S' ? directions_S : directions_O;
+
+      for (const { dr, dc } of directions) {
         const sos = checkDirection(row, col, dr, dc);
         if (sos) {
-          drawLine(sos.startRow, sos.startCol, lineClass);
+          drawLine(sos.startRow, sos.startCol, sos.endRow, sos.endCol);
           currentPlayer === 1 ? player1Score++ : player2Score++;
           updateScores();
           sosFound = true;
@@ -321,14 +322,12 @@
         const endRow = row + 2 * dr;
         const endCol = col + 2 * dc;
 
-		console.log(`startRow: ${row}, startCol: ${col}, endRow: ${endRow}, endCol: ${endCol}`);
         if (
           endRow >= 0 && endCol >= 0 && endRow < boardSize && endCol < boardSize &&
           gameBoard[endRow][endCol] === 'S' &&
           gameBoard[row + dr][col + dc] === 'O'
         ) {
-		  console.log('SOS');
-          return { startRow: row, startCol: col };
+          return { startRow: row, startCol: col, endRow, endCol };
         }
       } else if (letter === 'O') {
         const startRow = row - dr;
@@ -336,26 +335,48 @@
         const endRow = row + dr;
         const endCol = col + dc;
 
-		console.log(`startRow: ${startRow}, startCol: ${startCol}, endRow: ${endRow}, endCol: ${endCol}`);
         if (
           startRow >= 0 && startCol >= 0 && endRow < boardSize && endCol < boardSize &&
-		  endRow >= 0 && endCol >= 0 && startRow < boardSize && startCol < boardSize &&
+          endRow >= 0 && endCol >= 0 && startRow < boardSize && startCol < boardSize &&
           gameBoard[startRow][startCol] === 'S' &&
           gameBoard[endRow][endCol] === 'S'
         ) {
-		  console.log('SOS');
-          return { startRow, startCol };
+          return { startRow, startCol, endRow, endCol };
         }
       }
 
       return null;
     }
 
-    function drawLine(startRow, startCol, lineClass) {
-      const startCell = document.querySelector(`#gameBoard button:nth-child(${startRow * boardSize + startCol + 1})`);
+    function drawLine(startRow, startCol, endRow, endCol) {
+      const boardRect = boardElement.getBoundingClientRect(); // Oyun tahtasının konumunu al
+      const cellSize = boardRect.width / boardSize; // Her bir hücrenin boyutunu hesapla
+
+      // Başlangıç ve bitiş hücrelerinin merkez koordinatlarını hesapla
+      const startX = boardRect.left + startCol * cellSize + cellSize / 2;
+      const startY = boardRect.top + startRow * cellSize + cellSize / 2;
+      const endX = boardRect.left + endCol * cellSize + cellSize / 2;
+      const endY = boardRect.top + endRow * cellSize + cellSize / 2;
+
+      // Çizginin uzunluğunu ve açısını hesapla
+      const length = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+      const angle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI);
+
+      // Çizgi elemanını oluştur ve stilini ayarla
       const line = document.createElement('div');
-      line.classList.add('line', lineClass);
-      startCell.appendChild(line);
+      line.classList.add('line');
+      line.style.position = 'absolute';
+      line.style.width = `${length}px`;
+      line.style.height = '2px';
+      line.style.backgroundColor = 'red';
+      line.style.transformOrigin = '0 0';
+      line.style.transform = `rotate(${angle}deg)`;
+      line.style.left = `${startX}px`;
+      line.style.top = `${startY}px`;
+      line.style.zIndex = '10'; // Çizginin üstte görünmesini sağla
+
+      // Çizgiyi oyun tahtasına ekle
+      document.body.appendChild(line);
     }
 
     function isBoardFull() {

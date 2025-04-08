@@ -155,17 +155,83 @@ function resetGame() {
   placeFood();
 }
 
-function update() {
-  if (isPaused) return;
+let directionQueue1 = []; // Yılan 1 için yön kuyruğu
+let directionQueue2 = []; // Yılan 2 için yön kuyruğu
+const maxQueueLength = 3; // Kuyruğun maksimum uzunluğu
 
-  moveSnake(snake1, dx1, dy1);
-  if (playerCount === 2) moveSnake(snake2, dx2, dy2);
+let lastKeyPressed1 = null; // Yılan 1 için son basılan tuş
+let lastKeyPressed2 = null; // Yılan 2 için son basılan tuş
 
-  checkCollision(snake1, snake2);
-  draw(); // Oyun elemanlarını çiz
-}
+// Klavye kontrolleri
+document.addEventListener('keydown', event => {
+  switch (event.key) {
+    // Yılan 1 için kontroller
+    case 'ArrowUp':
+      if (dy1 === 0 && lastKeyPressed1 !== 'ArrowUp' && directionQueue1.length < maxQueueLength) {
+        directionQueue1.push({ dx: 0, dy: -1 });
+        lastKeyPressed1 = 'ArrowUp';
+      }
+      break;
+    case 'ArrowDown':
+      if (dy1 === 0 && lastKeyPressed1 !== 'ArrowDown' && directionQueue1.length < maxQueueLength) {
+        directionQueue1.push({ dx: 0, dy: 1 });
+        lastKeyPressed1 = 'ArrowDown';
+      }
+      break;
+    case 'ArrowLeft':
+      if (dx1 === 0 && lastKeyPressed1 !== 'ArrowLeft' && directionQueue1.length < maxQueueLength) {
+        directionQueue1.push({ dx: -1, dy: 0 });
+        lastKeyPressed1 = 'ArrowLeft';
+      }
+      break;
+    case 'ArrowRight':
+      if (dx1 === 0 && lastKeyPressed1 !== 'ArrowRight' && directionQueue1.length < maxQueueLength) {
+        directionQueue1.push({ dx: 1, dy: 0 });
+        lastKeyPressed1 = 'ArrowRight';
+      }
+      break;
 
-function moveSnake(snake, dx, dy) {
+    // Yılan 2 için kontroller (2 oyunculu modda)
+    case 'w':
+      if (playerCount === 2 && dy2 === 0 && lastKeyPressed2 !== 'w' && directionQueue2.length < maxQueueLength) {
+        directionQueue2.push({ dx: 0, dy: -1 });
+        lastKeyPressed2 = 'w';
+      }
+      break;
+    case 's':
+      if (playerCount === 2 && dy2 === 0 && lastKeyPressed2 !== 's' && directionQueue2.length < maxQueueLength) {
+        directionQueue2.push({ dx: 0, dy: 1 });
+        lastKeyPressed2 = 's';
+      }
+      break;
+    case 'a':
+      if (playerCount === 2 && dx2 === 0 && lastKeyPressed2 !== 'a' && directionQueue2.length < maxQueueLength) {
+        directionQueue2.push({ dx: -1, dy: 0 });
+        lastKeyPressed2 = 'a';
+      }
+      break;
+    case 'd':
+      if (playerCount === 2 && dx2 === 0 && lastKeyPressed2 !== 'd' && directionQueue2.length < maxQueueLength) {
+        directionQueue2.push({ dx: 1, dy: 0 });
+        lastKeyPressed2 = 'd';
+      }
+      break;
+  }
+});
+
+// Yılanı hareket ettiren fonksiyon
+function moveSnake(snake, dx, dy, directionQueue) {
+  // Kuyruktan sıradaki yönü al
+  if (directionQueue.length > 0) {
+    const nextDirection = directionQueue.shift();
+    dx = nextDirection.dx;
+    dy = nextDirection.dy;
+
+    // Son basılan tuşu sıfırla (yeni yön uygulandı)
+    if (snake === snake1) lastKeyPressed1 = null;
+    if (snake === snake2) lastKeyPressed2 = null;
+  }
+
   const head = { x: snake[0].x + dx, y: snake[0].y + dy };
   snake.unshift(head);
 
@@ -179,21 +245,37 @@ function moveSnake(snake, dx, dy) {
     snake.pop();
   } else {
     if (snake === snake1) {
-	  console.log("Yem yenildi-1 !");
       score1++;
-	  console.log(document.getElementById('score1'));
-	  document.getElementById('score1').textContent = score1;
-      //snake.push({ ...snake[snake.length - 1] }); // Yılan uzasın
-	  document.getElementById('length1').textContent = snake1.length;
+      document.getElementById('score1').textContent = score1;
+      document.getElementById('length1').textContent = snake1.length;
     }
     if (snake === snake2) {
       score2++;
-	  document.getElementById('score2').textContent = score2;
-      //snake.push({ ...snake[snake.length - 1] }); // Yılan uzasın
-	  document.getElementById('length2').textContent = snake2.length;
+      document.getElementById('score2').textContent = score2;
+      document.getElementById('length2').textContent = snake2.length;
     }
     placeFood();
   }
+
+  return { dx, dy }; // Yeni yönü döndür
+}
+
+// Güncelleme fonksiyonunda `moveSnake` çağrısı
+function update() {
+  if (isPaused) return;
+
+  const newDirection1 = moveSnake(snake1, dx1, dy1, directionQueue1);
+  dx1 = newDirection1.dx;
+  dy1 = newDirection1.dy;
+
+  if (playerCount === 2) {
+    const newDirection2 = moveSnake(snake2, dx2, dy2, directionQueue2);
+    dx2 = newDirection2.dx;
+    dy2 = newDirection2.dy;
+  }
+
+  checkCollision(snake1, snake2);
+  draw();
 }
 
 function checkCollision(snake1, snake2) {
@@ -334,21 +416,7 @@ function updateScoreBoard() {
   document.getElementById('length2').textContent = playerCount === 2 ? snake2.length : '-';
 }
 
-// Klavye kontrolleri
-document.addEventListener('keydown', event => {
-  switch (event.key) {
-    case 'ArrowUp': if (dy1 === 0) { dx1 = 0; dy1 = -1; } break;
-    case 'ArrowDown': if (dy1 === 0) { dx1 = 0; dy1 = 1; } break;
-    case 'ArrowLeft': if (dx1 === 0) { dx1 = -1; dy1 = 0; } break;
-    case 'ArrowRight': if (dx1 === 0) { dx1 = 1; dy1 = 0; } break;
-    case 'w': if (playerCount === 2 && dy2 === 0) { dx2 = 0; dy2 = -1; } break;
-    case 's': if (playerCount === 2 && dy2 === 0) { dx2 = 0; dy2 = 1; } break;
-    case 'a': if (playerCount === 2 && dx2 === 0) { dx2 = -1; dy2 = 0; } break;
-    case 'd': if (playerCount === 2 && dx2 === 0) { dx2 = 1; dy2 = 0; } break;
-    case 'ArrowUp': if (document.activeElement === document.getElementById('speed')) adjustSpeed(1); break;
-    case 'ArrowDown': if (document.activeElement === document.getElementById('speed')) adjustSpeed(-1); break;
-  }
-});
+
 
 function adjustSpeed(change) {
   let currentSpeed = parseInt(document.getElementById('speed').value);

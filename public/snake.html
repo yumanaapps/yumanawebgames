@@ -26,63 +26,132 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   }
   .controls {
-    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap; /* İçerik taşarsa alt satıra geçsin */
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px auto;
+    max-width: 600px; /* Oyun alanının genişliğiyle aynı */
+    gap: 10px; /* Elemanlar arasında boşluk */
   }
-  .controls label {
-    font-size: 18px;
-    margin-right: 10px;
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Etiket ve öğe arasında boşluk */
+    min-width: 200px; /* Her bir grup için minimum genişlik */
   }
-  .controls input, .controls select {
-    width: 50px;
+
+  #players {
+    width: 150px; /* Dropdown genişliği artırıldı */
     padding: 5px;
     font-size: 16px;
-    text-align: center;
-    border: none;
     border-radius: 4px;
     background-color: #34495e;
     color: #ecf0f1;
+    border: none;
   }
-  .controls button {
-    padding: 5px 15px;
+
+  #speed {
+    width: 200px; /* Slider genişliği */
+  }
+
+  #speedDisplay {
     font-size: 16px;
+    color: #ecf0f1;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 10px; /* Butonlar arasında boşluk */
+  }
+
+  .buttons button {
+    padding: 5px 10px; /* Butonlar biraz daraltıldı */
+    font-size: 14px;
     border: none;
     border-radius: 4px;
     background-color: #e74c3c;
     color: #ecf0f1;
     cursor: pointer;
   }
-  .controls button:hover {
+
+  .buttons button:hover {
     background-color: #c0392b;
   }
-  .scoreboard {
-    font-size: 20px;
-    margin-bottom: 20px;
+  .controls label {
+    font-size: 18px;
+    margin-right: 10px;
   }
-  .scoreboard span {
-    margin: 0 20px;
-    font-weight: bold;
+    .score-panels {
+    display: flex;
+    justify-content: space-around; /* Paneller arasında eşit boşluk bırak */
+    gap: 10px; /* Paneller arasında 10px boşluk */
+    margin: 10px auto; /* Ortalamak için */
+    max-width: 600px; /* Oyun alanının genişliğiyle aynı */
   }
+  .score-panel {
+    width: 48%; /* Panellerin genişliği, toplamda %100'ü geçmeyecek şekilde ayarlandı */
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .green-panel {
+    background-color: #27ae60; /* Yeşil yılanın rengi */
+  }
+
+  .blue-panel {
+    background-color: #2980b9; /* Mavi yılanın rengi */
+  }
+
+  .score-panel h2 {
+    margin: 0;
+    font-size: 24px;
+  }
+
+  .score-panel p {
+    margin: 5px 0;
+    font-size: 18px;
+  }
+
 </style>
 </head>
 <body>
 <div class="container">
   <h1>Yılan Oyunu</h1>
   <div class="controls">
-    <label for="players">Oyuncu Sayısı:</label>
-    <select id="players">
-      <option value="1">1 Kişi</option>
-      <option value="2">2 Kişi</option>
-    </select>
-    <label for="speed">Oyun Hızı (1-10):</label>
-    <input type="number" id="speed" min="1" max="10" value="5">
-    <button id="startPauseButton" onclick="toggleGame()">Oyuna Başla</button>
-    <button onclick="restartGame()">Yeniden Başlat</button>
+    <div class="control-group">
+      <label for="players">Oyuncu Sayısı:</label>
+      <select id="players">
+        <option value="1">1 Kişi</option>
+        <option value="2">2 Kişi</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="speed">Oyun Hızı:</label>
+      <input type="range" id="speed" min="1" max="10" value="5" oninput="adjustSpeedDisplay(this.value)">
+      <span id="speedDisplay">5</span>
+    </div>
+    <div class="control-group buttons">
+      <button id="startPauseButton" onclick="toggleGame()">Oyuna Başla</button>
+      <button onclick="restartGame()">Yeniden Başlat</button>
+    </div>
   </div>
-  <div class="scoreboard">
-    <div>Yeşil Skor: <span id="score1">0</span></div>
-    <div>Yeşil Uzunluk: <span id="length1">1</span></div>
-    <div>Mavi Skor: <span id="score2">0</span></div>
-    <div>Mavi Uzunluk: <span id="length2">1</span></div>
+  <div class="score-panels">
+    <div class="score-panel green-panel">
+      <h2>Yeşil</h2>
+      <p>Skor: <span id="score1">0</span></p>
+      <p>Uzunluk: <span id="length1">1</span></p>
+    </div>
+    <div class="score-panel blue-panel">
+      <h2>Mavi</h2>
+      <p>Skor: <span id="score2">0</span></p>
+      <p>Uzunluk: <span id="length2">1</span></p>
+    </div>
   </div>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
 </div>
@@ -116,6 +185,11 @@ document.getElementById('speed').addEventListener('input', function() {
 document.getElementById('players').addEventListener('change', function() {
   playerCount = parseInt(this.value);
 });
+
+function adjustSpeedDisplay(value) {
+  document.getElementById('speedDisplay').textContent = value;
+  speedSetting = parseInt(value);
+}
 
 function toggleGame() {
   if (isPaused) {

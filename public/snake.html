@@ -12,6 +12,8 @@
     color: #ecf0f1;
     margin: 0;
     padding: 0;
+     /* overflow: hidden; Scroll bar'ları tamamen kaldır */
+    height: 100vh; /* Sayfanın yüksekliğini tam ekran yap */
   }
   .container {
     max-width: 800px;
@@ -83,22 +85,24 @@
     font-size: 18px;
     margin-right: 10px;
   }
-    .score-panels {
-    display: flex;
-    justify-content: space-around; /* Paneller arasında eşit boşluk bırak */
-    gap: 10px; /* Paneller arasında 10px boşluk */
-    margin: 10px auto; /* Ortalamak için */
-    max-width: 600px; /* Oyun alanının genişliğiyle aynı */
-  }
-  .score-panel {
-    width: 48%; /* Panellerin genişliği, toplamda %100'ü geçmeyecek şekilde ayarlandı */
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    color: white;
-    font-family: Arial, sans-serif;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  }
+  .score-panels {
+  display: flex;
+  justify-content: space-around; /* Paneller arasında eşit boşluk bırak */
+  gap: 10px; /* Paneller arasında 10px boşluk */
+  margin: 5px auto; /* Daha az boşluk bırak */
+  max-width: 600px; /* Oyun alanının genişliğiyle aynı */
+}
+
+.score-panel {
+  width: 48%; /* Panellerin genişliği, toplamda %100'ü geçmeyecek şekilde ayarlandı */
+  padding: 5px; /* Daha az iç boşluk */
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px; /* Daha küçük yazı boyutu */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
 
   .green-panel {
     background-color: #27ae60; /* Yeşil yılanın rengi */
@@ -177,6 +181,13 @@ let dx2 = -1, dy2 = 0;
 
 let score1 = 0, score2 = 0;
 let playerCount = 1;
+
+// Varsayılan sayfa kaydırma davranışını engelle
+window.addEventListener('keydown', function(event) {
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    event.preventDefault();
+  }
+});
 
 document.getElementById('speed').addEventListener('input', function() {
   speedSetting = parseInt(this.value);
@@ -430,40 +441,114 @@ function draw() {
   // Yılan 1'i çiz
   snake1.forEach((segment, index) => {
     if (index === 0) {
-      // Yılanın başını farklı bir renkle çiz
-      ctx.fillStyle = '#27ae60'; // Baş rengi
+      // Yılanın başını yuvarlak olarak çiz
+      ctx.beginPath();
+      ctx.arc(
+        segment.x * gridSize + gridSize / 2,
+        segment.y * gridSize + gridSize / 2,
+        gridSize / 2,
+        0,
+        2 * Math.PI
+      );
+      ctx.fillStyle = shadeColor('#27ae60', -40); // Yeşil yılanın başı
+      ctx.fill();
+      ctx.strokeStyle = "#2c3e50";
+      ctx.stroke();
+
+      // Gözleri ekle
+      ctx.beginPath();
+      ctx.arc(
+        segment.x * gridSize + gridSize / 3, // Sol göz
+        segment.y * gridSize + gridSize / 3,
+        gridSize / 8,
+        0,
+        2 * Math.PI
+      );
+      ctx.fillStyle = "white";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(
+        segment.x * gridSize + (2 * gridSize) / 3, // Sağ göz
+        segment.y * gridSize + gridSize / 3,
+        gridSize / 8,
+        0,
+        2 * Math.PI
+      );
+      ctx.fillStyle = "white";
+      ctx.fill();
     } else {
       // Boğumlar için renk geçişi
       ctx.fillStyle = index % 2 === 0 ? '#2ecc71' : shadeColor('#2ecc71', -20);
+      ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+      ctx.strokeStyle = "#2c3e50";
+      ctx.strokeRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
     }
-    ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
-
-    // Kenarlık ekleyerek boğumları belirginleştir
-    ctx.strokeStyle = "#2c3e50";
-    ctx.strokeRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
   });
 
   // Yılan 2'yi çiz
   if (playerCount === 2) {
     snake2.forEach((segment, index) => {
       if (index === 0) {
-        // Yılanın başını farklı bir renkle çiz
-        ctx.fillStyle = '#2980b9'; // Baş rengi
+        // Yılanın başını yuvarlak olarak çiz
+        ctx.beginPath();
+        ctx.arc(
+          segment.x * gridSize + gridSize / 2,
+          segment.y * gridSize + gridSize / 2,
+          gridSize / 2,
+          0,
+          2 * Math.PI
+        );
+        ctx.fillStyle = shadeColor('#2980b9', -40); // Mavi yılanın başı
+        ctx.fill();
+        ctx.strokeStyle = "#2c3e50";
+        ctx.stroke();
+
+        // Gözleri ekle
+        ctx.beginPath();
+        ctx.arc(
+          segment.x * gridSize + gridSize / 3, // Sol göz
+          segment.y * gridSize + gridSize / 3,
+          gridSize / 8,
+          0,
+          2 * Math.PI
+        );
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(
+          segment.x * gridSize + (2 * gridSize) / 3, // Sağ göz
+          segment.y * gridSize + gridSize / 3,
+          gridSize / 8,
+          0,
+          2 * Math.PI
+        );
+        ctx.fillStyle = "white";
+        ctx.fill();
       } else {
         // Boğumlar için renk geçişi
         ctx.fillStyle = index % 2 === 0 ? '#3498db' : shadeColor('#3498db', -20);
+        ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+        ctx.strokeStyle = "#2c3e50";
+        ctx.strokeRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
       }
-      ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
-
-      // Kenarlık ekleyerek boğumları belirginleştir
-      ctx.strokeStyle = "#2c3e50";
-      ctx.strokeRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
     });
   }
 
-  // Yemi çiz
+  // Yemi çiz (daha estetik bir daire olarak)
+  ctx.beginPath();
+  ctx.arc(
+    food.x * gridSize + gridSize / 2,
+    food.y * gridSize + gridSize / 2,
+    gridSize / 2,
+    0,
+    2 * Math.PI
+  );
   ctx.fillStyle = 'yellow';
-  ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+  ctx.fill();
+  ctx.strokeStyle = '#f39c12';
+  ctx.stroke();
 }
 
 function shadeColor(color, percent) {
